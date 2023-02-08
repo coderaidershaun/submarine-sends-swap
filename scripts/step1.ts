@@ -18,5 +18,5 @@ const main = async () => {
   console.log("Factory Address: ", deployedFactory.address)
 }
 
-// Run main
+// Execute command
 main();

@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 
 async function main() {
   const Factory = await ethers.getContractFactory("Factory");
-  const factory = await Factory.deploy();
+  const factory = await Factory.deploy("<revealContractAddress>");
 
   await factory.deployed();
 

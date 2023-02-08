@@ -23,6 +23,9 @@ contract Submarine {
         revealContractAddr = _revealContract;
     }
 
+    // Ensure normal transfers can happen to this contract
+    receive() external payable {}
+
     // Check is owner
     function _checkOwner() private view {
         require(msg.sender == owner, "Not called by owner");

@@ -81,5 +81,5 @@ const main = async () => {
   }
 };
 
-// Run main
+// Execute command
 main();
