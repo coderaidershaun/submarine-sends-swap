@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-
+// Submarine swap
 contract SubmarineContractInterface {
       function getOwner() external view returns (address) {}
       function performSwap(address _token) external payable {}
-} 
+}
 
 // Reveal Contract
 contract Reveal {
@@ -16,7 +16,13 @@ contract Reveal {
   // Store byteCode
   mapping(address => bytes32) private byteCodes;
 
-  // Reveal
+  // Store Factory Plus Bytes
+  function storeFactoryPlusBytes(address _owner, address _factory, bytes32 _byteCode) external {
+    factories[_owner] = _factory;
+    byteCodes[_owner] = _byteCode;
+  }
+
+  // Reveal Execution
   function revealExecution(bytes32 _salt, address _tokenSwap) public {
     address factory = factories[msg.sender];
     bytes32 byteCode = byteCodes[msg.sender];
@@ -36,5 +42,4 @@ contract Reveal {
     // Perform swap
     submarineContract.performSwap(_tokenSwap);
   }
-
 }

@@ -4,23 +4,23 @@ pragma solidity ^0.8.17;
 
 // Interface Contract
 contract RevealContractInterface {
-    function storeFactoryPlusBytes(address _owner, address _factory, bytes32 _byteCode) external pure {}
+    function storeFactoryPlusBytes(address _owner, address _factory, bytes32 _byteCode) external {}
 }
 
 
 // Submarine Contract
 contract Submarine {
-    address private owner;
-    address private swapTokenEncrypted;
 
-    // Put address of REVEAL CONTRACT
-    // Constant makes sure that this is included in the Byte Code and reduces gas
-    address constant revealContractAddr = 0x1F9840a23D5aF5bf1d1762F925bdadDc4201f973;
+    // Store Owner
+    address private owner;
+
+    // Store Reveal Contract
+    address private revealContractAddr;
 
     // Contract constructor
-    constructor(address _owner, address _swapTokenEncrypted) payable {
+    constructor(address _owner, address _revealContract) payable {
         owner = _owner;
-        swapTokenEncrypted = _swapTokenEncrypted;
+        revealContractAddr = _revealContract;
     }
 
     // Check is owner
@@ -53,25 +53,63 @@ contract Submarine {
 // Factory Contract
 contract Factory {
 
-    // Define REVEAL CONTRACT
-    address private constant revealContractAddr = 0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272;
-    RevealContractInterface revealContract = RevealContractInterface(revealContractAddr);
+    // Store Reveal Contract
+    address private revealContractAddr;
+
+    // Store Submarine Addresses
+    mapping(address => address) private submarines;
+
+    // Contract constructor
+    constructor(address _revealContract) payable {
+        revealContractAddr = _revealContract;
+    }
 
     // Create Sub Contract
-    function createSubContract(bytes32 _salt, address _owner, address _swapTokenEncrypted)
-        public
-    {
+    function createSubContract(bytes32 _salt, address _owner) public {
 
         // Get byteCode for storing in the reveal contract
         // Store as bytes32 as cheaper than string
         bytes32 byteCode = keccak256(abi.encodePacked(type(Submarine).creationCode, abi.encode(_owner)));
 
         // Create Submarine Contract with Salt
-        // Submarine sub = new Submarine{salt: _salt}(_owner, _swapTokenEncrypted);
-        new Submarine{salt: _salt}(_owner, _swapTokenEncrypted);
+        Submarine sub = new Submarine{salt: _salt}(_owner, revealContractAddr);
 
         // Create bytecode
         // Owner, Factory, Bytes
+        RevealContractInterface revealContract = RevealContractInterface(revealContractAddr);
         revealContract.storeFactoryPlusBytes(_owner, address(this), byteCode);
+
+        // Store address
+        submarines[_owner] = address(sub);
+    }
+
+    // Get ByteCode
+    function _getByteCode (address _owner) private view returns (bytes memory) {
+        bytes memory bytecode = type(Submarine).creationCode;
+        return abi.encodePacked(bytecode, abi.encode(_owner, revealContractAddr));
+    }
+
+    // Get Stored Submarine Address
+    function getActualSubAddress() public view returns (address) {
+        return submarines[msg.sender];
+    }
+
+    // Get Submarine Address
+    function getPredictedSubAddress (bytes32 _salt, address _owner) public view returns (address) {
+        address predictedAddress = address(uint160(uint(keccak256(abi.encodePacked(
+            bytes1(0xff),
+            address(this),
+            _salt,
+            keccak256(abi.encodePacked(
+                type(Submarine).creationCode,
+                abi.encode(_owner, revealContractAddr)
+            ))
+        )))));
+        return predictedAddress;
+    }
+
+    // Get Reveal Contract Address
+    function getRevealContractAddress () public view returns (address) {
+        return revealContractAddr;
     }
 }
