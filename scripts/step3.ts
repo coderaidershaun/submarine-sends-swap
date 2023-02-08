@@ -8,7 +8,7 @@ const sendEthertoSubmarine = async () => {
   const AMOUNT_IN_ETH = "0.2";
 
   // Get signer and provider
-  const { signer, wallet, provider } = await getProviderDetails();
+  const { signer, provider } = await getProviderDetails();
   console.log()
 
   // Show current Submarine Contract balance
