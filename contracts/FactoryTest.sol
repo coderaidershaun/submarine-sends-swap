@@ -72,26 +72,17 @@ contract Submarine {
     // Execute
     function _executeTrade(address _tokenSwap) private {
 
-        // // Wrap ETH to WETH for swap
-        // IWETH(WETHAddr).deposit{ value: address(this).balance }();
+        // Perform whatever function you would like here
 
-        // // Define deadline
-        // uint deadline = block.timestamp + 3000;
+        // Token Swap
+        // Arbitrage
+        // Etc
 
-        // // Structure addresses
-        // address[] memory addressPath = new address[](2);
-        // addressPath[0] = WETHAddr;
-        // addressPath[1] = _tokenSwap;
+        // For testing we will just do something useless like make the variable equal the variable
+        // Then in the Factory Live contract, we will code up our useful swap function
+        _tokenSwap = _tokenSwap;
 
-        // // Send Swap
-        // IUniswap(uniswapRouterAddr).swapETHForExactTokens(
-        //     0,
-        //     addressPath,
-        //     owner,
-        //     deadline
-        // );
-
-        // Destroy Submarine Contract
+        // Destroy Submarine Contract and receive back gas
         _destroy();
     }
 

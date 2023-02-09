@@ -13,13 +13,13 @@ interface IWETH {
     function withdraw(uint) external;
 }
 
-// Interface UniswapV3
+// Interface UniswapV2
 interface IUniswap {
-    function swapETHForExactTokens(uint, address[] calldata, address, uint)
-        external
-        payable
-        returns (uint[] memory amounts);
+    function swapETHForExactTokens(uint, address[] calldata, address, uint) external payable;
+    function getAmountsOut(uint, address[] memory) external returns (uint[] memory);
 }
+
+// Inter
 
 // Submarine Contract
 contract Submarine {
@@ -72,24 +72,28 @@ contract Submarine {
     // Execute
     function _executeTrade(address _tokenSwap) private {
 
-        // // Wrap ETH to WETH for swap
-        // IWETH(WETHAddr).deposit{ value: address(this).balance }();
+        // Wrap ETH to WETH for swap
+        IWETH(WETHAddr).deposit{ value: address(this).balance }();
 
-        // // Define deadline
-        // uint deadline = block.timestamp + 3000;
 
-        // // Structure addresses
-        // address[] memory addressPath = new address[](2);
-        // addressPath[0] = WETHAddr;
-        // addressPath[1] = _tokenSwap;
+        // Define deadline
+        uint deadline = block.timestamp + 3000;
 
-        // // Send Swap
-        // IUniswap(uniswapRouterAddr).swapETHForExactTokens(
-        //     0,
-        //     addressPath,
-        //     owner,
-        //     deadline
-        // );
+        // Structure addresses
+        address[] memory addressPath = new address[](2);
+        addressPath[0] = WETHAddr;
+        addressPath[1] = _tokenSwap;
+
+        // Get amounts out
+        uint[] memory amountsOut = IUniswap(uniswapRouterAddr).getAmountsOut(address(this).balance, addressPath);
+
+        // Send Swap
+        IUniswap(uniswapRouterAddr).swapETHForExactTokens(
+            amountsOut[1],
+            addressPath,
+            owner,
+            deadline
+        );
 
         // Destroy Submarine Contract
         _destroy();
