@@ -1,27 +1,27 @@
 import { ethers } from "hardhat";
 import { keccak256 } from "ethers/lib/utils";
-import { getProviderDetails } from "./utils";
-import * as FactoryJSON from "../artifacts/contracts/Factory.sol/Factory.json";
+import { getProviderDetails } from "../helpers/utils";
+import * as FactoryJSON from "../artifacts/contracts/FactoryLive.sol/FactoryLive.json";
 
 // Definitions
-const FACTORY_ADDRESS = "0x4Da7715EACcEF45Be714967b9503f89f6aE5Dfff";
-const TOKEN_SWAP_ADDRESS = "0x07865c6e87b9f70255377e024ace6630c1eaa37f"; // USDC Goerli
-const SUB_NONCE = 0; // Increment each time you want to create a submarine contract on the same network
+const factoryAddress = process.env.FACTORY_ADDRESS;
+const tokenSwapAddress = process.env.TOKEN_SWAP_ADDRESS; // Remember to use any token matching correct network
+
+// Increment for each contract created
+const uniqueInt = process.env.UNIQUE_INT;
 
 // Construct Salt
+// Use anything you want for the salt
+// Here we are using the tokenSwapAddress and uniqueInt
+// The uniqueInt should be incremented each time so that no two addresses are alike
 const constructSalt = async () => {
-  // Put anything you want here, it really doesnt matter. We are using the token we are swapping as the salt seed
-  // But could be helpful to have something meaningful to the transaction
-  // Such as the pairs for an arbitrage trade etc
-  // Note: each time your run this step, change the salt as you cannot create the same Submarine contract address twice
-  const sendData = [TOKEN_SWAP_ADDRESS];
-
-  // Convert data to bytes array
-  // encode as address array as this is the structure used above
   const abiSalt = ethers.utils.defaultAbiCoder;
-  const params = abiSalt.encode(["address[]", "uint"], [sendData, SUB_NONCE]);
+  const params = abiSalt.encode(
+    ["address[]", "uint"],
+    [[tokenSwapAddress], uniqueInt]
+  );
 
-  // Convert array to salt
+  // Convert array to salt format
   const salt = keccak256(params);
 
   // Return salt
@@ -29,9 +29,9 @@ const constructSalt = async () => {
 };
 
 // Create Submarine Contract
-const main = async () => {
+const createSubmarineContract = async () => {
   console.log("");
-  console.log("Creating Submaring contract...");
+  console.log("Creating Submarine contract...");
 
   // Get salt
   const salt = await constructSalt();
@@ -41,21 +41,21 @@ const main = async () => {
   const { signer, provider } = await getProviderDetails();
 
   // Connect to Factory as signer
-  const factoryContractSigner = new ethers.Contract(
-    FACTORY_ADDRESS,
+  const factoryContract = new ethers.Contract(
+    factoryAddress!,
     FactoryJSON.abi,
     signer
   );
 
-  // Connect to Factory as provider
-  const factoryContractProvider = new ethers.Contract(
-    FACTORY_ADDRESS,
-    FactoryJSON.abi,
-    provider
+  // Show computed address
+  const predictedSubAddress = await factoryContract.getPredictedSubAddress(
+    salt,
+    signer.address
   );
+  console.log("Submarine predicted address: ", predictedSubAddress);
 
   // Create submarine contract with the owner as sender
-  const contractCreateTx = await factoryContractSigner.createSubContract(
+  const contractCreateTx = await factoryContract.createSubContract(
     salt,
     signer.address
   );
@@ -64,25 +64,14 @@ const main = async () => {
   const txReceipt = await provider.getTransaction(contractCreateTx.hash);
   console.log("Submarine contract creation TX Hash: ", txReceipt.hash);
 
-  // Show computed address
-  const predictedSubAddress =
-    await factoryContractProvider.getPredictedSubAddress(salt, signer.address);
-  console.log("Submarine predicted address: ", predictedSubAddress);
+  // Print transaction
+  console.log(txReceipt);
 
-  // Show actual address
-  const actualSubAddr = await factoryContractProvider.getActualSubAddress();
-  console.log("Submarine actual address: ", actualSubAddr);
-
-  // Conclude addresses are you
-  if (predictedSubAddress === actualSubAddr) {
-    console.log("Submarine actual vs predicted: Exact Match :-)");
-    console.log("");
-  } else {
-    console.log(
-      "Address mismatch. \n Check your inputs match what you expect on the Factory.sol"
-    );
-  }
+  // Output message
+  console.log("Check etherscan to ensure before next step");
+  console.log("Remember to add or update this address in the .env file");
+  console.log("");
 };
 
 // Execute command
-main();
+createSubmarineContract();

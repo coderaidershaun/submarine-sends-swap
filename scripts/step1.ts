@@ -9,25 +9,26 @@ import { ethers } from "hardhat";
    npx hardhat run --network goerli scripts/step1.ts
 */
 
-// Run function for each contract
-const main = async () => {
-  console.log("")
-  console.log("Deploying Reveal and Factory contracts...")
+// Deploys reveal and then factory contracts
+const deployBaseContracts = async () => {
+  console.log("");
+  console.log("Deploying Reveal and Factory contracts...");
 
   // Deploy Reveal Contract
   const ContractReveal = await ethers.getContractFactory("Reveal");
   const deployedReveal = await ContractReveal.deploy();
   await deployedReveal.deployed();
-  console.log("Reveal Address: ", deployedReveal.address)
+  console.log("Reveal Address: ", deployedReveal.address);
 
-  const ContractFactory = await ethers.getContractFactory("Factory");
+  const ContractFactory = await ethers.getContractFactory("FactoryLive");
   const deployedFactory = await ContractFactory.deploy(deployedReveal.address);
   await deployedFactory.deployed();
-  console.log("Factory Address: ", deployedFactory.address)
+  console.log("Factory Address: ", deployedFactory.address);
 
   // Make space
-  console.log("")
-}
+  console.log("Remember to add these to your .env file");
+  console.log("");
+};
 
 // Execute command
-main();
+deployBaseContracts();

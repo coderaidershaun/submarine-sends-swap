@@ -1,44 +1,42 @@
 import { ethers } from "hardhat";
-import { getProviderDetails } from "./utils";
+import { getProviderDetails } from "../helpers/utils";
+import * as FactoryJSON from "../artifacts/contracts/FactoryLive.sol/FactoryLive.json";
 
-// Define contract address and amount
-// This has been taken from Remix in a live situation
-const SUBMARINE_CONTRACT = "0x575193ddf1b8372404b7061237411de18A9775A3";
-const AMOUNT_IN_ETH = "0.001";
+// Definitions
+const factoryAddress = process.env.FACTORY_ADDRESS;
+const predSubAddress = process.env.SUBMARINE_ADDRESS;
 
-// Send Ethereum to Submarin Contract
-const sendEthertoSubmarine = async () => {
+// Create Submarine Contract
+const createSubmarineContract = async () => {
   console.log("");
-  console.log("Sending funds to Submaring contract...");
+  console.log("Checking Submarine contract...");
 
   // Get signer and provider
-  const { signer, provider } = await getProviderDetails();
+  const { signer } = await getProviderDetails();
 
-  // Show current Submarine Contract balance
-  const submarineBalance = ethers.utils.formatEther(
-    await provider.getBalance(SUBMARINE_CONTRACT)
+  // Connect to Factory as signer
+  const factoryContract = new ethers.Contract(
+    factoryAddress!,
+    FactoryJSON.abi,
+    signer
   );
-  console.log("Initial balance on Submarine contract ETH: ", submarineBalance);
 
-  // Convert ethereum into wei
-  const amountWei = ethers.utils.parseEther(AMOUNT_IN_ETH);
+  // Show actual address
+  const actualSubAddr = await factoryContract.getActualSubAddress();
+  console.log("Submarine actual address: ", actualSubAddr);
+  console.log("Submarine predicted address: ", actualSubAddr);
 
-  // Build Transaction
-  const tx = {
-    to: SUBMARINE_CONTRACT,
-    value: amountWei,
-  };
+  // Conclude addresses are you
+  if (predSubAddress === actualSubAddr) {
+    console.log("Submarine actual vs predicted: Exact Match :-)");
+  } else {
+    console.error("ERROR")
+    console.error("Check your salt inputs match what you expect for everything");
+  }
 
-  // Send Transaction
-  const txSend = await signer.sendTransaction(tx);
-  console.log("Send transaction Hash: ", txSend.hash);
-
-  // Show balance of submarine transaction
-  const balance = await provider.getBalance(SUBMARINE_CONTRACT);
-  const humanBalance = ethers.utils.formatEther(balance);
-  console.log("Current balance of Submarine contract is ETH: ", humanBalance);
+  // Give space
   console.log("");
 };
 
 // Execute command
-sendEthertoSubmarine();
+createSubmarineContract();
