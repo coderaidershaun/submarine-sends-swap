@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 // Submarine swap
-contract SubmarineContractInterface {
-      function getOwner() external view returns (address) {}
-      function performSwap(address _token) external payable {}
+interface ISubmarine {
+  function getOwner() external view returns (address);
+  function performSwap(address _tokenSwap) external payable;
 }
 
 // Reveal Contract
@@ -22,6 +22,14 @@ contract Reveal {
     byteCodes[_owner] = _byteCode;
   }
 
+  // Get Submarine address
+  function getSubmarineAddress(bytes32 _salt) public view returns (address) {
+    address factory = factories[msg.sender];
+    bytes32 byteCode = byteCodes[msg.sender];
+    address submarineAddress = address(uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), factory, _salt, byteCode)))));
+    return submarineAddress;
+  }
+
   // Reveal Execution
   function revealExecution(bytes32 _salt, address _tokenSwap) public {
     address factory = factories[msg.sender];
@@ -30,16 +38,13 @@ contract Reveal {
     // Get predicted address
     address submarineAddress = address(uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), factory, _salt, byteCode)))));
 
-    // Connect to Submarine Contract
-    SubmarineContractInterface submarineContract = SubmarineContractInterface(submarineAddress);
-
     // Get submaine contract owner
-    address subOwner = submarineContract.getOwner();
+    address subOwner = ISubmarine(submarineAddress).getOwner();
 
     // Ensure owner of submarine contract is also the message sender
     require (subOwner == msg.sender, "Owner error");
 
     // Perform swap
-    submarineContract.performSwap(_tokenSwap);
+    ISubmarine(submarineAddress).performSwap(_tokenSwap);
   }
 }
