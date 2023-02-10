@@ -7,19 +7,19 @@ interface IReveal {
     function storeFactoryPlusBytes(address _owner, address _factory, bytes32 _byteCode) external;
 }
 
-// Interface WETH
-interface IWETH {
-    function deposit() external payable;
-    function withdraw(uint) external;
-}
+// // Interface WETH
+// interface IWETH {
+//     function deposit() external payable;
+//     function withdraw(uint) external;
+// }
 
-// Interface UniswapV3
-interface IUniswap {
-    function swapETHForExactTokens(uint, address[] calldata, address, uint)
-        external
-        payable
-        returns (uint[] memory amounts);
-}
+// // Interface UniswapV3
+// interface IUniswap {
+//     function swapETHForExactTokens(uint, address[] calldata, address, uint)
+//         external
+//         payable
+//         returns (uint[] memory amounts);
+// }
 
 // Submarine Contract
 contract Submarine {

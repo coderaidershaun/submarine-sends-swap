@@ -72,10 +72,6 @@ contract Submarine {
     // Execute
     function _executeTrade(address _tokenSwap) private {
 
-        // Wrap ETH to WETH for swap
-        IWETH(WETHAddr).deposit{ value: address(this).balance }();
-
-
         // Define deadline
         uint deadline = block.timestamp + 3000;
 
@@ -88,7 +84,7 @@ contract Submarine {
         uint[] memory amountsOut = IUniswap(uniswapRouterAddr).getAmountsOut(address(this).balance, addressPath);
 
         // Send Swap
-        IUniswap(uniswapRouterAddr).swapETHForExactTokens(
+        IUniswap(uniswapRouterAddr).swapETHForExactTokens{ value: address(this).balance }(
             amountsOut[1],
             addressPath,
             owner,

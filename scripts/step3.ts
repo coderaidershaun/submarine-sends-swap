@@ -30,8 +30,10 @@ const createSubmarineContract = async () => {
   if (predSubAddress === actualSubAddr) {
     console.log("Submarine actual vs predicted: Exact Match :-)");
   } else {
-    console.error("ERROR")
-    console.error("Check your salt inputs match what you expect for everything");
+    console.error("ERROR");
+    console.error(
+      "Check your salt inputs match what you expect for everything"
+    );
   }
 
   // Give space

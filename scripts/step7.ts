@@ -3,6 +3,7 @@ import { getProviderDetails } from "../helpers/utils";
 
 // Definitions
 const submarineAddress = process.env.SUBMARINE_ADDRESS;
+const tokenSwapAddress = process.env.TOKEN_SWAP_ADDRESS;
 
 // Step 4: Execute transaction
 const checkExecutionSuccess = async () => {
@@ -22,22 +23,22 @@ const checkExecutionSuccess = async () => {
   const humanBalanceWallet = ethers.utils.formatEther(balanceWallet);
   console.log("Current sender balance is ETH: ", humanBalanceWallet);
 
-  // const humanReadableAbi = [
-  //   "function balanceOf(address owner) view returns (uint balance)",
-  // ];
+  const humanReadableAbi = [
+    "function balanceOf(address owner) view returns (uint balance)",
+  ];
 
-  // // Connect to Swapped token Contract
-  // const tokenContract = new ethers.Contract(
-  //   tokenSwapAddress!,
-  //   humanReadableAbi,
-  //   provider
-  // );
+  // Connect to Swapped token Contract
+  const tokenContract = new ethers.Contract(
+    tokenSwapAddress!,
+    humanReadableAbi,
+    provider
+  );
 
-  // // Print out
-  // const swapBalance = await tokenContract.balanceOf(signer.address);
-  // const humanSwapBalance = ethers.utils.formatEther(swapBalance);
-  // console.log("Current sender balance of Swap Token: ", humanSwapBalance);
-  // console.log("");
+  // Print out
+  const swapBalance = await tokenContract.balanceOf(signer.address);
+  const humanSwapBalance = ethers.utils.formatUnits(swapBalance, 6);
+  console.log("Current sender balance of Swap Token: ", humanSwapBalance);
+  console.log("");
 };
 
 // Execute command
